@@ -4,8 +4,8 @@
 
 int main ()
 {
-
-  VanEmdeBoas veb = VanEmdeBoas(65536);
+  
+  VanEmdeBoas veb = VanEmdeBoas(INT_MAX);
 
   veb.insert(0);
   veb.insert(2);
