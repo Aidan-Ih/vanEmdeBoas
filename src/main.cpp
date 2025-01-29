@@ -5,23 +5,32 @@
 int main ()
 {
 
-  VanEmdeBoas veb = VanEmdeBoas(256);
+  VanEmdeBoas veb = VanEmdeBoas(65536);
 
   veb.insert(0);
-  veb.insert(1);
   veb.insert(2);
   veb.insert(3);
+  veb.insert(8);
   veb.insert(100);
-  veb.insert(199);
+  veb.insert(200);
+  veb.insert(10000);
 
-  std::cout << veb.query(199);
+/*
+std::cout << veb.query(129);
+  std::cout << veb.query(130);
+  std::cout << veb.query(131);
+  std::cout << veb.query(132);
+  std::cout << veb.query(133);
+*/
 
+  std::cout << veb.successor(1000);
+  std::cout << "\n";
+  
+  //std::cout << "Succ(3) = ";
+  //std::cout << veb.successor(3);
+  //std::cout << "\n";
 
   /*
-  std::cout << "Succ(0) = ";
-  std::cout << veb.successor(0);
-  std::cout << "\n";
-
   veb.insert(120);
   veb.insert(8);
 

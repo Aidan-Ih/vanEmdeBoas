@@ -7,6 +7,7 @@ class VanEmdeBoas {
   public:
   int universe_size;
   int cluster_size;
+  int bitshift_size;
   int min;
   int max;
   VanEmdeBoas* veb_metadata;
@@ -15,7 +16,10 @@ class VanEmdeBoas {
 
   /*Returns the "high" half of x, corresponding to it's cluster number*/
   int high(int x) {
-    return x >> int(log2(cluster_size));
+    std::cout << "Getting high with bitshift size: ";
+    std::cout << bitshift_size;
+    std::cout << "\n";
+    return x >> bitshift_size;
   }
   /*Returns the "low" half of x, corresponding to the index within the cluster*/
   int low(int x) {
@@ -35,6 +39,7 @@ class VanEmdeBoas {
     }
     else {
       cluster_size = int(sqrt(size));
+      bitshift_size = int(log2(cluster_size));
       veb_metadata = new VanEmdeBoas(cluster_size);
     }
   }
@@ -45,23 +50,43 @@ class VanEmdeBoas {
   bool insert(int x) {
     //In base case, let min and max represent whether or not 0 and 1 exist in the structure
     if (universe_size == 2) {
-      //std::cout << "Hello from the insert base case\n";
+      std::cout << "Hello from the insert base case\n";
       if (x == 0) {
         min = 0;
+        if (max == -1) {
+          max = 0;
+        }
+        /*
+        std::cout << "Min: ";
+        std::cout << min;
+        std::cout << "\nMax: ";
+        std::cout << max;
+        std::cout << "\n";
+        */
         return true;
       }
       else {
         max = 1;
+        if (min == -1) {
+          min = 1;
+        }
+        /*
+        std::cout << "Min: ";
+        std::cout << min;
+        std::cout << "\nMax: ";
+        std::cout << max;
+        std::cout << "\n";
+        */
         return true;
       }
     }
     else {
       //first insertion, max/min initialized to -1
 
-      //std::cout << "Current size: ";
-      //std::cout << universe_size;
-      //std::cout << "\n";
-      if (min == -1 && max == -1) {
+      std::cout << "Current size: ";
+      std::cout << universe_size;
+      std::cout << "\n";
+      if (min == -1) {
         min = x;
         max = x;
         return true;
@@ -72,9 +97,7 @@ class VanEmdeBoas {
         x = temp;
       }
       else if (x > max) {
-        int temp = max;
         max = x;
-        x = temp;
       }
 
       //continue insert after potential min/max swaps
@@ -83,6 +106,13 @@ class VanEmdeBoas {
 
       //create cluster if it does not exist
       if (clusters.find(cluster_num) == clusters.end()) {
+        std::cout << "Inserting new cluster: ";
+        std::cout << cluster_num;
+        std::cout << " where size is: ";
+        std::cout << universe_size;
+        std::cout << " and val is: ";
+        std::cout << x;
+        std::cout << "\n";
         VanEmdeBoas *newVEB = new VanEmdeBoas(cluster_size);
         clusters.insert({cluster_num, newVEB});
         veb_metadata->insert(cluster_num);
@@ -149,25 +179,37 @@ Returns the successor of x, or -1 if it does not exist
     std::cout << "\n";
 
     if (universe_size == 2) {
+      std::cout << "Base case for successor\n";
+      std::cout << "min: ";
+      std::cout << min;
+      std::cout << "\nmax:";
+      std::cout << max;
+      std::cout << "\n";
       //successor does not exist for max
       if (x == 1) {
+        std::cout << "Base case successor for 1, return false\n";
         return -1;
       }
       else {
         //return max if it exists, returns null if it doesn't
-        return max;
+        std::cout << "Base case successor for 0\n";
+        if (max == 1) {
+          std::cout << "returning 1\n";
+          return 1;
+        }
+        return -1;
       }
     }
     else {
       //if tree has no elements, cannot find successor
-      if(max == -1 || min == -1) {
-        std::cout << "Successor returning -1 due to empty tree";
+      if(max == -1 && min == -1) {
+        std::cout << "Successor returning -1 due to empty tree\n";
         return -1;
       }
 
       //if element is greater than or equal to max, cannot find successor
       if (x >= max) {
-        std::cout << "successor returning -1 due to greater than max\n";
+        std::cout << "successor returning -1 due to greater than or equal to max\n";
         return -1;
       }
 
@@ -179,8 +221,19 @@ Returns the successor of x, or -1 if it does not exist
 
       int cluster_num = high(x);
       if (clusters.find(cluster_num) == clusters.end()) {
-        std::cout << "Successor could not find cluster\n";
-        return -1;
+        std::cout << "Successor could not find cluster ";
+        std::cout << cluster_num;
+        std::cout << "\n";
+
+        //skip to searching for successor in metadata
+        int next_cluster_num = veb_metadata->successor(cluster_num);
+        if (next_cluster_num == -1) {
+          return -1;
+        }
+        else {
+          VanEmdeBoas *next_cluster = clusters[next_cluster_num];
+          return (next_cluster_num << bitshift_size) + next_cluster->min;
+        }
       }
 
       int cluster_val = low(x);
@@ -195,18 +248,37 @@ Returns the successor of x, or -1 if it does not exist
       //recursive call into size sqrt(u)
       int succ = cluster->successor(cluster_val);
 
+      std::cout << "Recursive call found: ";
+      std::cout << succ;
+      std::cout << "\n";
+
       //if could not find the successor in recursive call, then successor must be the minimum of the next node
       if (succ == -1) {
+        std::cout << "Searching for successor to cluster: ";
+        std::cout << cluster_num;
+        std::cout << " | where size is: ";
+        std::cout << universe_size;
+        std::cout << " | and metadata size is: ";
+        std::cout << veb_metadata->universe_size;
+        std::cout << "\n";
+
+
         int next_cluster_num = veb_metadata->successor(cluster_num);
         if (next_cluster_num == -1) {
           return -1;
         }
+        std::cout << "Found next cluster: ";
+        std::cout << next_cluster_num;
+        std::cout << "\n";
         VanEmdeBoas *next_cluster = clusters[next_cluster_num];
-        return next_cluster->min;
-      }
 
-      //otherwise, return found successor
-      return (cluster_num << cluster_size) + succ;
+        return (next_cluster_num << bitshift_size) + next_cluster->min;
+      }
+      else {
+        std::cout << "returning: \n";
+        return (cluster_num << bitshift_size) + succ;
+      }
     }
+    return -1;
   }
 };
