@@ -1,7 +1,15 @@
  	
+#ifndef VAN_EMDE_BOAS_TREE
+#define VAN_EMDE_BOAS_TREE
+
 #include <iostream>
 #include <math.h>
 #include <unordered_map>
+
+/*
+Implementation of vanEmdeBoas Tree supporting insert, query, and successor in
+O(loglog(U)) operations
+*/
 
 class VanEmdeBoas {
   public:
@@ -221,3 +229,5 @@ Returns the successor of x, or -1 if it does not exist
     return -1;
   }
 };
+
+#endif
