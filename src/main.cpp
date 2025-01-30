@@ -6,19 +6,31 @@
 int main ()
 {
   
-  long long two_to_the_32 = 4294967296;
-  VanEmdeBoas veb = VanEmdeBoas(two_to_the_32);
-
-  veb.insert(0);
-  veb.insert(2);
-  veb.insert(3);
-  veb.insert(8);
+ // uint32_t two_to_the_32 = 4294967295;
+  VanEmdeBoas veb = VanEmdeBoas(32);
+  
+  /*
   veb.insert(100);
   veb.insert(200);
   veb.insert(10000);
   veb.insert(294967296);
+  */
 
-  std::cout << veb.successor(50000);
+  veb.insert(1);
+  veb.insert(3);
+  veb.insert(8);
+  veb.insert(100);
+  std::cout << std::to_string(veb.successor(10)) + "\n";
+  /*
   std::cout << "\n";
+  */
 }
 
+/*
+
+Office Hours Questions:
+unordered_map ?
+type: ull? ll? How to represent min and max on initialization (null, -1, etc.)
+strategy to benchmark
+
+*/
