@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <math.h>
-#include <unordered_map>
+#include <vector>
 #include <cstdint>
 
 /*
@@ -21,8 +21,9 @@ class VanEmdeBoas {
   bool has_min;
   uint32_t min;
   uint32_t max;
-  VanEmdeBoas* veb_metadata;
 
+  std::vector<bool> base_bits;
+  VanEmdeBoas* veb_metadata;
   VanEmdeBoas** clusters;
 
   /*Returns the "high" half of x, corresponding to it's cluster number*/
@@ -41,14 +42,14 @@ class VanEmdeBoas {
     has_min = false;
 
     //base case!
-    if (num_bits == 1) {
-      veb_metadata = NULL;
+    if (num_bits == 4) {
+      base_bits = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     }
     else {
       cluster_bits = num_bits / 2;
       mod_size = 1 << cluster_bits;
       veb_metadata = new VanEmdeBoas(cluster_bits);
-      clusters = (VanEmdeBoas**) new int*[1 << cluster_bits]();
+      clusters = (VanEmdeBoas**) new int*[(1 << cluster_bits)]();
     }
   }
 
@@ -59,26 +60,22 @@ class VanEmdeBoas {
     //std::cerr << "insert call for " + std::to_string(x) + " Insert level: " + std::to_string(universe_bits) + "\n";
 
     //In base case, let min and max represent whether or not 0 and 1 exist in the structure
-    if (universe_bits == 1) {
+    if (universe_bits == 4) {
       //std::cerr << "base case\n";
-      if (x == 0) {
-        min = 0;
+      if (!has_min) {
+        min = x;
+        max = x;
         has_min = true;
-        if (!has_max) {
-          max = 0;
-          has_max = true;
-        }
-      }
-      else {
-        max = 1;
         has_max = true;
-        if (!has_min) {
-          min = 1;
-          has_min = true;
-        }
-        return true;
       }
-      return false;
+      if (x < min) {
+        min = x;
+      }
+      if (x > max) {
+        max = x;
+      }
+      base_bits[x] = 1;
+      return true;
     }
     else {
       //std::cerr << "Not base case\n";
@@ -133,13 +130,8 @@ class VanEmdeBoas {
 
     //std::cout << "Query call\n";
     //In base case, min and max simply represent whether 0 or 1 exist in the structure
-    if (universe_bits == 1) {
-      if (x == 0) {
-        return has_min && min == 0;
-      }
-      else {
-        return has_max && max == 1;
-      }
+    if (universe_bits == 4) {
+      return base_bits[x];
     }
     else {
       //if tree has no inserted elements yet return false
@@ -179,19 +171,16 @@ Returns the successor of x, or -1 if it does not exist
 
     //std::cout << "Successor call\n";
     //base case
-    if (universe_bits == 1) {
-
-      //successor does not exist for max
-      if (x == 1) {
-        return -1;
-      }
-      else {
-        //return max if it exists, returns null if it doesn't
-        if (has_max) {
-          return 1;
+    if (universe_bits == 4) {
+      //std::cout << "base case finding: " + std::to_string(x) + "\n";
+      for (int i = x + 1; i < 16; i++) {
+        if (base_bits[i]) {
+          //std::cout << "returning base case, found " + std::to_string(i) + "\n";
+          return i;
         }
-        return -1;
       }
+      //std::cout << "returning base case, did not find\n";
+      return -1;
     }
     else {
       //if tree has no elements, cannot find successor
@@ -214,11 +203,13 @@ Returns the successor of x, or -1 if it does not exist
 
       if (clusters[cluster_num] == NULL) {
         //skip to searching for successor in metadata
+        //std::cout << "Searching for successor in metadata, current size = " + std::to_string(universe_bits) + "\n";
         long next_cluster_num = veb_metadata->successor(cluster_num);
         if (next_cluster_num == -1) {
           return -1;
         }
         else {
+          //std::cout << "Returning next cluster min\n";
           VanEmdeBoas *next_cluster =  clusters[next_cluster_num];
           return (next_cluster_num << cluster_bits) + next_cluster->min;
         }
@@ -228,12 +219,12 @@ Returns the successor of x, or -1 if it does not exist
       VanEmdeBoas *cluster =  clusters[cluster_num];
 
       //recursive call into size sqrt(u)
+      //std::cout << "Searching for successor in recursive call\n";
       long succ = cluster->successor(cluster_val);
-
 
       //if could not find the successor in recursive call, then successor must be the minimum of the next node
       if (succ == -1) {
-
+        //std::cout << "searching for successor in metadata after recursive call\n";
         long next_cluster_num = veb_metadata->successor(cluster_num);
         if (next_cluster_num == -1) {
           return -1;

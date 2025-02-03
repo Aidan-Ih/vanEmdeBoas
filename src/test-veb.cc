@@ -20,12 +20,12 @@ void safe_rand_bytes(unsigned char *v, uint32_t n) {
 		v += round_size;
 		n -= round_size;
 	}
-}  
+}   
   
 int main(int argc, char** argv) {
 	if (argc < 2) {
 		std::cerr << "Specify the number of items for the test.\n";
-		exit(1);
+		exit(1); 
 	}
 	uint32_t N = atoi(argv[1]); 	// number of items
 
@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
 		exit(0);
 	} 
 	safe_rand_bytes((unsigned char *)in_numbers, sizeof(*in_numbers) * N);
- 
+  
 	// Generate N numbers different from in_numbers for succ queries
 	uint32_t *out_numbers = (uint32_t *)malloc(N * sizeof(uint32_t));
 	if(!out_numbers) {
@@ -47,9 +47,9 @@ int main(int argc, char** argv) {
 
 	// Create a bst using std::set
 	high_resolution_clock::time_point t1, t2;
-
+  
   	VanEmdeBoas veb = VanEmdeBoas(32);
- 
+        
 	t1 = high_resolution_clock::now();
 	for (uint32_t i = 0; i < N; ++i) {
 		veb.insert(in_numbers[i]);

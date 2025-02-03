@@ -21,7 +21,7 @@ void safe_rand_bytes(unsigned char *v, uint32_t n) {
 		n -= round_size;
 	}
 }
- 
+  
 int main(int argc, char** argv) {
 	if (argc < 2) {
 		std::cerr << "Specify the number of items for the test.\n";
