@@ -20,8 +20,8 @@ void safe_rand_bytes(unsigned char *v, uint32_t n) {
 		v += round_size;
 		n -= round_size;
 	}
-}
- 
+}  
+  
 int main(int argc, char** argv) {
 	if (argc < 2) {
 		std::cerr << "Specify the number of items for the test.\n";
@@ -34,9 +34,9 @@ int main(int argc, char** argv) {
 	if(!in_numbers) {
 		std::cerr << "Malloc in_numbers failed.\n";
 		exit(0);
-	}
+	} 
 	safe_rand_bytes((unsigned char *)in_numbers, sizeof(*in_numbers) * N);
-
+ 
 	// Generate N numbers different from in_numbers for succ queries
 	uint32_t *out_numbers = (uint32_t *)malloc(N * sizeof(uint32_t));
 	if(!out_numbers) {

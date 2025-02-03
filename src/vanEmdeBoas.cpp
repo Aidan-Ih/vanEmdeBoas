@@ -23,7 +23,7 @@ class VanEmdeBoas {
   uint32_t max;
   VanEmdeBoas* veb_metadata;
 
-  VanEmdeBoas **clusters;
+  VanEmdeBoas** clusters;
 
   /*Returns the "high" half of x, corresponding to it's cluster number*/
   uint32_t high(uint32_t x) {
@@ -48,7 +48,7 @@ class VanEmdeBoas {
       cluster_bits = num_bits / 2;
       mod_size = 1 << cluster_bits;
       veb_metadata = new VanEmdeBoas(cluster_bits);
-      clusters = (VanEmdeBoas**) new int* [1 << cluster_bits];
+      clusters = (VanEmdeBoas**) new int*[1 << cluster_bits]();
     }
   }
 
@@ -56,8 +56,11 @@ class VanEmdeBoas {
   Inserts a value into the VEB. Return true if successful, false if an error occurs
   */
   bool insert(uint32_t x) {
+    //std::cerr << "insert call for " + std::to_string(x) + " Insert level: " + std::to_string(universe_bits) + "\n";
+
     //In base case, let min and max represent whether or not 0 and 1 exist in the structure
     if (universe_bits == 1) {
+      //std::cerr << "base case\n";
       if (x == 0) {
         min = 0;
         has_min = true;
@@ -78,6 +81,7 @@ class VanEmdeBoas {
       return false;
     }
     else {
+      //std::cerr << "Not base case\n";
       if (!has_min) {
         min = x;
         max = x;
@@ -107,13 +111,16 @@ class VanEmdeBoas {
       //}
 
       //if cluster does not exist
-      if (!veb_metadata->query(cluster_num)) {
+      if (clusters[cluster_num] == NULL) {
+        //std::cout << "Creating new cluster " + std::to_string(cluster_num) + "\n";
         clusters[cluster_num] = new VanEmdeBoas(cluster_bits);
         veb_metadata->insert(cluster_num);
       }
       
-      VanEmdeBoas *cluster = clusters[cluster_num];
+      VanEmdeBoas *cluster = (VanEmdeBoas*) clusters[cluster_num];
       //std::cout << "Inserting cluster val " + std::to_string(cluster_val) + "\n";
+      //std::cout << "Recursive insert into cluster: " + std::to_string(cluster_num) + " with value: " + std::to_string(cluster_val) + "\n";
+      //std::cout << std::to_string((long)cluster) + "\n";
       cluster->insert(cluster_val);
       return true;
     }
@@ -123,6 +130,8 @@ class VanEmdeBoas {
   Queries the VEB. Returns true if value is found, returns false if not (or error)
   */
   bool query(uint32_t x) {
+
+    //std::cout << "Query call\n";
     //In base case, min and max simply represent whether 0 or 1 exist in the structure
     if (universe_bits == 1) {
       if (x == 0) {
@@ -152,7 +161,7 @@ class VanEmdeBoas {
       uint32_t cluster_num = high(x);
 
       //if cluster does not exist, return false
-      if (!veb_metadata->query(cluster_num)) {
+      if (clusters[cluster_num] == NULL) {
         return false;
       }
 
@@ -167,6 +176,8 @@ class VanEmdeBoas {
 Returns the successor of x, or -1 if it does not exist
 */
   long successor(uint32_t x) {
+
+    //std::cout << "Successor call\n";
     //base case
     if (universe_bits == 1) {
 
@@ -201,20 +212,20 @@ Returns the successor of x, or -1 if it does not exist
       
       uint32_t cluster_num = high(x);
 
-      if (!veb_metadata->query(cluster_num)) {
+      if (clusters[cluster_num] == NULL) {
         //skip to searching for successor in metadata
         long next_cluster_num = veb_metadata->successor(cluster_num);
         if (next_cluster_num == -1) {
           return -1;
         }
         else {
-          VanEmdeBoas *next_cluster = clusters[next_cluster_num];
+          VanEmdeBoas *next_cluster =  clusters[next_cluster_num];
           return (next_cluster_num << cluster_bits) + next_cluster->min;
         }
       }
 
       uint32_t cluster_val = low(x);
-      VanEmdeBoas *cluster = clusters[cluster_num];
+      VanEmdeBoas *cluster =  clusters[cluster_num];
 
       //recursive call into size sqrt(u)
       long succ = cluster->successor(cluster_val);
