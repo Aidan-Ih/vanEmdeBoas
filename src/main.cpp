@@ -18,9 +18,17 @@ int main ()
 
   veb.insert(1);
   veb.insert(3);
-  veb.insert(8);
   veb.insert(100);
-  std::cout << std::to_string(veb.successor(10)) + "\n";
+  veb.insert(1000);
+
+  std::cout << veb.query(1);
+  std::cout << veb.query(3);
+  std::cout << veb.query(5);
+  std::cout << veb.query(100);
+  std::cout << veb.query(1000);
+  //veb.insert(8);
+  //veb.insert(100);
+  //std::cout << std::to_string(veb.successor(10)) + "\n";
   /*
   std::cout << "\n";
   */

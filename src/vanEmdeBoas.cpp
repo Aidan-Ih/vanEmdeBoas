@@ -23,7 +23,7 @@ class VanEmdeBoas {
   uint32_t max;
   VanEmdeBoas* veb_metadata;
 
-  std::unordered_map<uint32_t, VanEmdeBoas*> clusters;
+  VanEmdeBoas **clusters;
 
   /*Returns the "high" half of x, corresponding to it's cluster number*/
   uint32_t high(uint32_t x) {
@@ -48,6 +48,7 @@ class VanEmdeBoas {
       cluster_bits = num_bits / 2;
       mod_size = 1 << cluster_bits;
       veb_metadata = new VanEmdeBoas(cluster_bits);
+      clusters = (VanEmdeBoas**) new int* [1 << cluster_bits];
     }
   }
 
@@ -57,11 +58,10 @@ class VanEmdeBoas {
   bool insert(uint32_t x) {
     //In base case, let min and max represent whether or not 0 and 1 exist in the structure
     if (universe_bits == 1) {
-
       if (x == 0) {
         min = 0;
         has_min = true;
-        if (!has_max){
+        if (!has_max) {
           max = 0;
           has_max = true;
         }
@@ -99,9 +99,16 @@ class VanEmdeBoas {
       uint32_t cluster_val = low(x);
 
       //create cluster if it does not exist
-      if (clusters.find(cluster_num) == clusters.end()) {
-        VanEmdeBoas *newVEB = new VanEmdeBoas(cluster_bits);
-        clusters.insert({cluster_num, newVEB});
+      
+      //if (clusters.find(cluster_num) == clusters.end()) {
+      // VanEmdeBoas *newVEB = new VanEmdeBoas(cluster_bits);
+      //  clusters.insert({cluster_num, newVEB});
+      //  veb_metadata->insert(cluster_num);
+      //}
+
+      //if cluster does not exist
+      if (!veb_metadata->query(cluster_num)) {
+        clusters[cluster_num] = new VanEmdeBoas(cluster_bits);
         veb_metadata->insert(cluster_num);
       }
       
@@ -119,10 +126,10 @@ class VanEmdeBoas {
     //In base case, min and max simply represent whether 0 or 1 exist in the structure
     if (universe_bits == 1) {
       if (x == 0) {
-        return has_min ? true : false;
+        return has_min && min == 0;
       }
       else {
-        return has_max ? true : false;
+        return has_max && max == 1;
       }
     }
     else {
@@ -145,7 +152,7 @@ class VanEmdeBoas {
       uint32_t cluster_num = high(x);
 
       //if cluster does not exist, return false
-      if (clusters.find(cluster_num) == clusters.end()) {
+      if (!veb_metadata->query(cluster_num)) {
         return false;
       }
 
@@ -194,9 +201,9 @@ Returns the successor of x, or -1 if it does not exist
       
       uint32_t cluster_num = high(x);
 
-      if (clusters.find(cluster_num) == clusters.end()) {
+      if (!veb_metadata->query(cluster_num)) {
         //skip to searching for successor in metadata
-        uint32_t next_cluster_num = veb_metadata->successor(cluster_num);
+        long next_cluster_num = veb_metadata->successor(cluster_num);
         if (next_cluster_num == -1) {
           return -1;
         }
