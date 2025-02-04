@@ -5,7 +5,7 @@
 #include <set>
 #include <chrono>
 #include <openssl/rand.h>
-#include "vanEmdeBoas.cpp"
+#include "../src/vanEmdeBoas.cpp"
 
 using namespace std::chrono;
 
@@ -20,8 +20,8 @@ void safe_rand_bytes(unsigned char *v, uint32_t n) {
 		v += round_size;
 		n -= round_size;
 	}
-}   
-  
+}    
+
 int main(int argc, char** argv) {
 	if (argc < 2) {
 		std::cerr << "Specify the number of items for the test.\n";
